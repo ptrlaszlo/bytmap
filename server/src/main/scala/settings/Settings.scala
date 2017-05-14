@@ -1,3 +1,5 @@
+package settings
+
 import com.typesafe.config.ConfigFactory
 
 trait Settings {
