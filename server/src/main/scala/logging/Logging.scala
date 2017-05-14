@@ -2,6 +2,6 @@ package logging
 
 import com.typesafe.scalalogging.Logger
 
-trait Log {
+trait Logging {
   val log = Logger(this.getClass)
 }

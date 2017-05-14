@@ -1,4 +1,4 @@
-package source
+package logic
 
 import akka.stream.ThrottleMode
 import akka.stream.scaladsl.Source
@@ -6,9 +6,9 @@ import model.TopRealityApartment
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
-import scala.util.{Failure, Success, Try}
-import scala.concurrent.duration._
 import scala.collection.JavaConverters._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
 
 object TopReality {
 

@@ -3,20 +3,19 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.sksamuel.elastic4s.ElasticsearchClientUri
 import com.sksamuel.elastic4s.http.HttpClient
-import logging.Log
+import logging.Logging
+import logic.{ElasticSearch, LocationResolver, TopReality}
 import settings.Settings
-import source.TopReality
-import store.ElasticSearch
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Promise
 
-object Main extends App with Settings with Log {
+object Main extends App with Settings with Logging {
 
   implicit val system = ActorSystem("system")
   implicit val materializer = ActorMaterializer()
 
-  val client = HttpClient(ElasticsearchClientUri(elasticUrl, elasticPort))
+  val client = HttpClient(ElasticsearchClientUri(elasticHost.url, elasticHost.port))
   val elasticClient = new ElasticSearch(client)
 
   def shutDown = {
@@ -27,9 +26,16 @@ object Main extends App with Settings with Log {
 
   val logic = for {
     _ <- elasticClient.initIndex
-    elasticUpdateFinished = Promise[Unit]
-    _ = TopReality.crawlApartments.runWith(elasticClient.upsertApartmentSink(elasticUpdateFinished))
-    _ <- elasticUpdateFinished.future.map(_ => shutDown)
+
+    apartmentsSaved = Promise[Unit]
+    _ = TopReality.crawlApartments.runWith(elasticClient.upsertApartment(apartmentsSaved))
+    _ <- apartmentsSaved.future
+
+    locationsSaved = Promise[Unit]
+    _ = elasticClient.getWithoutLocation.via(LocationResolver.getAddressFlow).runWith(elasticClient.upsertLocation(locationsSaved))
+    _ <- locationsSaved.future
+
+    _ = shutDown
   } yield ()
 
   logic.recover {
@@ -37,4 +43,5 @@ object Main extends App with Settings with Log {
       shutDown
       throw(t)
   }
+
 }
