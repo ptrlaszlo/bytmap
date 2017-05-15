@@ -2,10 +2,9 @@ package logic
 
 import akka.stream.ThrottleMode
 import akka.stream.scaladsl.{Flow, Source}
-import logging.Logging
+import common.{Logging, Settings}
 import model.{Location, TopRealityApartment}
 import play.api.libs.json.Json
-import settings.Settings
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}

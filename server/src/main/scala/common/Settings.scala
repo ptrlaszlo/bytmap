@@ -1,4 +1,4 @@
-package settings
+package common
 
 import com.typesafe.config.ConfigFactory
 

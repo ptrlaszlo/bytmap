@@ -2,7 +2,7 @@ package logic
 
 import akka.stream.ThrottleMode
 import akka.stream.scaladsl.Source
-import logging.Logging
+import common.Logging
 import model.TopRealityApartment
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element

@@ -3,9 +3,8 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.sksamuel.elastic4s.ElasticsearchClientUri
 import com.sksamuel.elastic4s.http.HttpClient
-import logging.Logging
+import common.{Logging, Settings}
 import logic.{ElasticSearch, LocationMap, LocationResolver, TopReality}
-import settings.Settings
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Promise
@@ -26,12 +25,17 @@ object Main extends App with Settings with Logging {
 
   val logic = for {
     _ <- elasticClient.initIndex
-//    locationMap <- elasticClient.getAddressWithLocation.runWith(LocationMap.addressMapFromLocations)
+    // TODO do we need location cache?: locationMap <- elasticClient.getAddressWithLocation.runWith(LocationMap.addressMapFromLocations)
 
+    // Crawling and saving apartments
     apartmentsSaved = Promise[Unit]
     _ = TopReality.crawlApartments.runWith(elasticClient.upsertApartment(apartmentsSaved))
     _ <- apartmentsSaved.future
 
+    // Removing old ones
+    _ <- elasticClient.removeNotModifiedToday
+
+    // Getting loactio (lat, lon) based on address
     locationsSaved = Promise[Unit]
     _ = elasticClient.getWithoutLocation.via(LocationResolver.getAddressFlow).runWith(elasticClient.upsertLocation(locationsSaved))
     _ <- locationsSaved.future

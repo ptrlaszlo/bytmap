@@ -9,6 +9,7 @@ import com.sksamuel.elastic4s.http.HttpClient
 import com.sksamuel.elastic4s.mappings._
 import com.sksamuel.elastic4s.streams.ReactiveElastic._
 import com.sksamuel.elastic4s.streams.RequestBuilder
+import common.Time
 import model.{Location, TopRealityApartment}
 import org.elasticsearch.common.geo.GeoPoint
 
@@ -19,6 +20,7 @@ class ElasticSearch(client: HttpClient) {
   private val indexRent = "rents"
   private val typeApartment = "apartment"
   private val fieldLocation = "location"
+  private val fieldLastModified = "modified"
 
   def initIndex(implicit ec: ExecutionContext): Future[Unit] = {
     client.execute(
@@ -42,8 +44,7 @@ class ElasticSearch(client: HttpClient) {
   def upsertApartment(completeOnFinish: Promise[Unit])(implicit as: ActorSystem) = {
     implicit val apartmentRequestBuilder = new RequestBuilder[TopRealityApartment] {
       def request(t: TopRealityApartment): BulkCompatibleDefinition = {
-        val valueMap = t.toMap //TODO add updated time
-
+        val valueMap = t.toMap + (fieldLastModified -> Time.getCurrentDateStr)
         indexOrUpdate(t.link, valueMap)
       }
     }
@@ -93,5 +94,9 @@ class ElasticSearch(client: HttpClient) {
       ).scroll("1m")
     })
     .mapConcat(hit => TopRealityApartment.fromMap(hit.sourceAsMap).toList)
+  }
+
+  def removeNotModifiedToday = client.execute {
+      deleteIn(indexRent, typeApartment).by(rangeQuery(fieldLastModified).lt("now/d"))
   }
 }
