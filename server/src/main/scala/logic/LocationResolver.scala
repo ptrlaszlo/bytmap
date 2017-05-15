@@ -14,12 +14,12 @@ import scalaj.http.{Http, HttpResponse}
 object LocationResolver extends Settings with Logging {
   private def getAddress(apartment: TopRealityApartment)(implicit ec: ExecutionContext): Future[Option[(TopRealityApartment, Location)]] =
     Future {
+      log.debug(s"Resolving address for ${apartment.address}")
       val response: HttpResponse[String] = Http(googleApi.url)
         .param("address", apartment.address)
         .param("key", googleApi.key)
         .asString
-      // TODO Add preference to slovakia
-      // TODO log errors
+      // TODO Add preference for slovakia
 
       if (response.code == 200) {
         (Json.parse(response.body) \\ "location").flatMap(_.asOpt[Location]).headOption.map((apartment, _))

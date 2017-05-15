@@ -1,5 +1,6 @@
 package logic
 
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Sink, Source}
 import com.sksamuel.elastic4s.bulk.BulkCompatibleDefinition
@@ -40,7 +41,11 @@ class ElasticSearch(client: HttpClient) {
 
   def upsertApartment(completeOnFinish: Promise[Unit])(implicit as: ActorSystem) = {
     implicit val apartmentRequestBuilder = new RequestBuilder[TopRealityApartment] {
-      def request(t: TopRealityApartment): BulkCompatibleDefinition = indexOrUpdate(t.link, t.toMap)
+      def request(t: TopRealityApartment): BulkCompatibleDefinition = {
+        val valueMap = t.toMap //TODO add updated time
+
+        indexOrUpdate(t.link, valueMap)
+      }
     }
 
     val completeFn: () => Unit = () => completeOnFinish.success(())
@@ -63,15 +68,30 @@ class ElasticSearch(client: HttpClient) {
     Sink.fromSubscriber(locationSubscriber)
   }
 
-  def getWithoutLocation(implicit as: ActorSystem) = {
+  def getAddressWithLocation(implicit as: ActorSystem): Source[(String, GeoPoint), NotUsed] = {
     Source.fromPublisher(client.publisher {
       search(indexRent).types(typeApartment).query(
-        boolQuery().not(existsQuery("location"))
-      ).scroll("10m")
+        boolQuery().must(existsQuery(fieldLocation))
+      ).scroll("1m")
     })
-    .map(hit => TopRealityApartment.fromMap(hit.sourceAsMap))
-    .collect {
-      case Some(v) => v
+    .mapConcat { hit =>
+      val source = hit.sourceAsMap
+      (for {
+        apartment <- TopRealityApartment.fromMap(source)
+        location <- source.get(fieldLocation)
+        locationMap = location.asInstanceOf[Map[String, Double]]
+        lat <- locationMap.get("lat")
+        lon <- locationMap.get("lon")
+      } yield (apartment.address, new GeoPoint(lat, lon))).toList
     }
+  }
+
+  def getWithoutLocation(implicit as: ActorSystem): Source[TopRealityApartment, NotUsed] = {
+    Source.fromPublisher(client.publisher {
+      search(indexRent).types(typeApartment).query(
+        boolQuery().not(existsQuery(fieldLocation))
+      ).scroll("1m")
+    })
+    .mapConcat(hit => TopRealityApartment.fromMap(hit.sourceAsMap).toList)
   }
 }
