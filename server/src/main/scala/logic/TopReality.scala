@@ -5,35 +5,40 @@ import akka.stream.scaladsl.Source
 import common.Logging
 import model.TopRealityApartment
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
+import org.jsoup.nodes.{Document, Element}
 
 import scala.collection.JavaConverters._
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-object TopReality extends Logging {
+class TopReality(
+  pageCountParser: () => Int,
+  apartmentParser: Document => List[TopRealityApartment]) extends Logging {
 
   def generateUrl(pageNumber: Int) =
     s"https://www.topreality.sk/vyhladavanie-nehnutelnosti-$pageNumber.html?type[0]=101&type[1]=108&type[2]=102&type[3]=103&type[4]=104&type[5]=105&type[6]=106&type[7]=109&type[8]=110&type[9]=107&form=3&n_search=search&searchType=string&sort=date_desc"
 
-  val adsPerPage = 15
-
-  def getNumberOfPages: Int = {
-    Try {
-      val documentForPageNumber = Jsoup.connect(generateUrl(1)).get
-      val numberOfAds = documentForPageNumber.select("p.count strong").text.replace(" ", "").toInt
-      val pages = numberOfAds * 1.0 / adsPerPage
-      if (pages % 1 == 0) pages.toInt else pages.toInt + 1
-    } match {
-      case Success(p) => p
-      case Failure(e) => throw new Exception("Couldn't parse page count from topreality", e)
+  def crawlApartments(implicit ec: ExecutionContext) = Source(1 to pageCountParser())
+    .throttle(1, 2 seconds, 1, ThrottleMode.Shaping)
+    .mapAsync(2) { pageNumber =>
+      Future {
+        val url = generateUrl(pageNumber)
+        log.debug(s"Getting data from $url")
+        apartmentParser(Jsoup.connect(url).get)
+      }
     }
+    .mapConcat(identity)
+}
+
+object TopRealityParser {
+  def getApartmentsFromDocument(doc: Document) = {
+    doc.select("div.estate").iterator.asScala.toList.flatMap(parseApartment)
   }
 
   def parseApartment(apartment: Element): Option[TopRealityApartment] = {
     Try {
       val a = apartment.select("h2 a")
-      log.debug(s"Parsing apartment from $a")
       TopRealityApartment(
         link = a.attr("href"),
         title = a.attr("title"),
@@ -45,13 +50,17 @@ object TopReality extends Logging {
     }.toOption
   }
 
-  val crawlApartments = Source(1 to 1) // Source(1 to TopReality.getNumberOfPages)
-    .throttle(1, 3 seconds, 1, ThrottleMode.Shaping)
-    .map { pageNumber =>
-      val url = TopReality.generateUrl(pageNumber)
-      log.debug(s"Getting data from $url")
-      val doc = Jsoup.connect(url).get
-      doc.select("div.estate").iterator.asScala.toList.flatMap(TopReality.parseApartment)
+  val adsPerPage = 15
+
+  val getNumberOfPages: () => Int = () => {
+    Try {
+      val documentForPageNumber = Jsoup.connect("https://www.topreality.sk/vyhladavanie-nehnutelnosti-1.html").get
+      val numberOfAds = documentForPageNumber.select("p.count strong").text.replace(" ", "").toInt
+      val pages = numberOfAds * 1.0 / adsPerPage
+      if (pages % 1 == 0) pages.toInt else pages.toInt + 1
+    } match {
+      case Success(p) => p
+      case Failure(e) => throw new Exception("Couldn't parse page count from topreality", e)
     }
-    .mapConcat(identity)
+  }
 }
