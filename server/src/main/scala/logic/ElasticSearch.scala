@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 
 class ElasticSearch(client: HttpClient) {
 
-  private val indexRent = "rents"
+  private[logic] val indexRent = "rents"
   private val typeApartment = "apartment"
   private val fieldLocation = "location"
   private val fieldLastModified = "modified"
@@ -50,8 +50,9 @@ class ElasticSearch(client: HttpClient) {
     }
 
     val completeFn: () => Unit = () => completeOnFinish.success(())
+    val errorFn: Throwable => Unit = t => completeOnFinish.failure(t)
 
-    val apartmentSubscriber = client.subscriber[TopRealityApartment](20, 1, completionFn = completeFn)
+    val apartmentSubscriber = client.subscriber[TopRealityApartment](15, 3, completionFn = completeFn, errorFn = errorFn)
     Sink.fromSubscriber(apartmentSubscriber)
   }
 
@@ -64,8 +65,9 @@ class ElasticSearch(client: HttpClient) {
     }
 
     val completeFn: () => Unit = () => completeOnFinish.success(())
+    val errorFn: Throwable => Unit = t => completeOnFinish.failure(t)
 
-    val locationSubscriber = client.subscriber[(TopRealityApartment, Location)](20, 1, completionFn = completeFn)
+    val locationSubscriber = client.subscriber[(TopRealityApartment, Location)](20, 1, completionFn = completeFn, errorFn = errorFn)
     Sink.fromSubscriber(locationSubscriber)
   }
 

@@ -13,25 +13,33 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
 class TopReality(
-  pageCountParser: () => Int,
+  pageCount: => Int,
+  pageNumToDocument: Int => Future[Document],
   apartmentParser: Document => List[TopRealityApartment]) extends Logging {
+
+  def crawlApartments(implicit ec: ExecutionContext) = {
+    val pages = pageCount
+    log.info(s"Crawling $pages pages from topreality")
+    Source(1 to pages)
+      .throttle(1, 2 seconds, 1, ThrottleMode.Shaping)
+      .mapAsyncUnordered(4) { pageNumber =>
+        log.info(s"Getting topreality data for page $pageNumber")
+        pageNumToDocument(pageNumber).map(apartmentParser)
+      }
+      .mapConcat(identity)
+  }
+}
+
+object TopRealityParser {
 
   def generateUrl(pageNumber: Int) =
     s"https://www.topreality.sk/vyhladavanie-nehnutelnosti-$pageNumber.html?type[0]=101&type[1]=108&type[2]=102&type[3]=103&type[4]=104&type[5]=105&type[6]=106&type[7]=109&type[8]=110&type[9]=107&form=3&n_search=search&searchType=string&sort=date_desc"
 
-  def crawlApartments(implicit ec: ExecutionContext) = Source(1 to pageCountParser())
-    .throttle(1, 2 seconds, 1, ThrottleMode.Shaping)
-    .mapAsync(2) { pageNumber =>
-      Future {
-        val url = generateUrl(pageNumber)
-        log.debug(s"Getting data from $url")
-        apartmentParser(Jsoup.connect(url).get)
-      }
-    }
-    .mapConcat(identity)
-}
+  def readDataFromPage(pageNumber: Int)(implicit ec: ExecutionContext): Future[Document] = Future {
+    val url = generateUrl(pageNumber)
+    Jsoup.connect(url).get
+  }
 
-object TopRealityParser {
   def getApartmentsFromDocument(doc: Document) = {
     doc.select("div.estate").iterator.asScala.toList.flatMap(parseApartment)
   }
@@ -52,7 +60,7 @@ object TopRealityParser {
 
   val adsPerPage = 15
 
-  val getNumberOfPages: () => Int = () => {
+  val getNumberOfPages: Int =
     Try {
       val documentForPageNumber = Jsoup.connect("https://www.topreality.sk/vyhladavanie-nehnutelnosti-1.html").get
       val numberOfAds = documentForPageNumber.select("p.count strong").text.replace(" ", "").toInt
@@ -62,5 +70,4 @@ object TopRealityParser {
       case Success(p) => p
       case Failure(e) => throw new Exception("Couldn't parse page count from topreality", e)
     }
-  }
 }
