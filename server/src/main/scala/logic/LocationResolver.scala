@@ -45,12 +45,12 @@ object LocationResolver extends Settings with Logging {
             val e = new Exception(s"Google API query limiet exceeded: $parsedBody")
             log.error(e.getMessage)
             throw e
-          } else if (status.isDefined) {
+          } else if (status.contains(JsString("OK"))) {
+            (parsedBody \\ "location").flatMap(_.asOpt[Location]).headOption.map((apartment, _))
+          } else {
             val e = new Exception(s"Unexpected response from Google API: $parsedBody")
             log.error(e.getMessage)
             throw e
-          } else {
-            (parsedBody \\ "location").flatMap(_.asOpt[Location]).headOption.map((apartment, _))
           }
         } else {
           log.warn(s"Couldn't get location for $apartment: ${response.body}")
