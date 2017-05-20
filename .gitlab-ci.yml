@@ -2,6 +2,7 @@ image: java:8
 
 stages:
   - test
+  - publish
 
 before_script:
   # Enable the usage of sources over https
@@ -22,3 +23,8 @@ test:
   script:
     # Execute your project's tests
     - sbt clean test
+
+publish:
+  stage: publish
+  script:
+    - sbt dockerBuildAndPush
