@@ -9,10 +9,10 @@ stages:
 before_script:
   # Log  the sbt version
   - sbt sbt-version
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
   - cd server/
 
 publish:
   stage: publish
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
     - sbt clean dockerBuildAndPush
