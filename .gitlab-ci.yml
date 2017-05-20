@@ -1,4 +1,4 @@
-image: hseeberger/scala-sbt:latest
+image: strobe/gitlab-dind-sbt:latest
 
 services:
   - docker:dind
