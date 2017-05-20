@@ -1,4 +1,4 @@
-image: hseeberger/scala-sbt
+image: lapi/sbt-with-docker:latest
 
 stages:
   - test
