@@ -1,21 +1,17 @@
-image: lapi/sbt-with-docker:latest
+image: hseeberger/scala-sbt:latest
+
+services:
+  - docker:dind
 
 stages:
-  - test
   - publish
 
 before_script:
-  # Log the sbt version
+  # Log  the sbt version
   - sbt sbt-version
   - cd server/
-
-test:
-  stage: test
-  script:
-    # Execute your project's tests
-    - sbt clean test
 
 publish:
   stage: publish
   script:
-    - sbt dockerBuildAndPush
+    - sbt clean dockerBuildAndPush
