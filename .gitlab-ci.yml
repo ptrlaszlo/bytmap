@@ -14,5 +14,5 @@ before_script:
 publish:
   stage: publish
   script:
-    - docker login -u lapi -p $DOCKER_HUB_PASS hub.docker.com
+    - docker login -u gitlab-ci-token -p $ACCESS_TOKEN registry.gitlab.com
     - sbt clean dockerBuildAndPush
