@@ -32,7 +32,7 @@ dockerfile in docker := {
 	val artifactTargetPath = s"/app/${artifact.name}"
 
 	new Dockerfile {
-		from("java")
+		from("java:8")
 		add(artifact, artifactTargetPath)
 		entryPoint("java", "-jar", artifactTargetPath)
 	}
