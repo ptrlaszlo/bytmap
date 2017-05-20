@@ -9,6 +9,7 @@ stages:
 before_script:
   # Log  the sbt version
   - sbt sbt-version
+  - docker login -u lapi -p $DOCKER_HUB_PASS
   - cd server/
 
 publish:
