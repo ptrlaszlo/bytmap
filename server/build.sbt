@@ -1,5 +1,6 @@
 
 name := "bytmap"
+version := "0.1.0"
 scalaVersion := "2.12.2"
 
 val akkaVersion = "2.4.17"
@@ -21,4 +22,23 @@ libraryDependencies ++= Seq(
 	"com.sksamuel.elastic4s" %% "elastic4s-testkit" % elastic4sVersion % Test,
   "org.specs2" %% "specs2-core" % specs2Version % Test,
   "org.specs2" %% "specs2-mock" % specs2Version % Test
+)
+
+enablePlugins(DockerPlugin)
+
+dockerfile in docker := {
+	// The assembly task generates a fat JAR file
+	val artifact: File = assembly.value
+	val artifactTargetPath = s"/app/${artifact.name}"
+
+	new Dockerfile {
+		from("java")
+		add(artifact, artifactTargetPath)
+		entryPoint("java", "-jar", artifactTargetPath)
+	}
+}
+
+imageNames in docker := Seq(
+	ImageName(namespace = Some("lapi"), repository = name.value, tag = Some("v" + version.value)),
+	ImageName(namespace = Some("lapi"), repository = name.value, tag = Some("latest"))
 )
