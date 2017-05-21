@@ -1,4 +1,4 @@
-image: strobe/gitlab-dind-sbt:latest
+image: lapi/test-docker-java:latest
 
 services:
   - docker:dind
