@@ -1,4 +1,4 @@
-image: lapi/test-docker-java:latest
+image: lapi/gitlab-docker-sbt
 
 services:
   - docker:dind
