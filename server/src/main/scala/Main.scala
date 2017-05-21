@@ -18,7 +18,7 @@ object Main extends App with Settings with Logging {
   val elasticClient = new ElasticSearch(client)
   val locationResolver = new LocationResolver(googleApi.maxRequestPerDay, LocationResolver.getAddress)
   val topReality = new TopReality(
-    200, //TopRealityParser.getNumberOfPages,
+    100, //TopRealityParser.getNumberOfPages,
     TopRealityParser.readDataFromPage,
     TopRealityParser.getApartmentsFromDocument)
   val parseCycle = new ParseCycle(elasticClient, topReality, locationResolver)

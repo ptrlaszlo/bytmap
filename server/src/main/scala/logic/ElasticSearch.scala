@@ -38,7 +38,7 @@ class ElasticSearch(client: HttpClient) {
   }
 
   private def indexOrUpdate(id: String, values: Map[String, Any]) = {
-    update(id).in(indexRent, typeApartment).docAsUpsert(values)
+    update(id).in(indexRent, typeApartment).docAsUpsert(values).copy(retryOnConflict = Some(5))
   }
 
   def upsertApartment(completeOnFinish: Promise[Unit])(implicit as: ActorSystem) = {
