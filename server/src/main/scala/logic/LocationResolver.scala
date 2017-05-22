@@ -40,20 +40,14 @@ object LocationResolver extends Settings with Logging {
 
         if (response.code == 200) {
           val parsedBody = Json.parse(response.body)
-          val status = (parsedBody \ "status").toOption
-          if (status.contains(JsString("OVER_QUERY_LIMIT"))) {
-            val e = new Exception(s"Google API query limiet exceeded: $parsedBody")
-            log.error(e.getMessage)
-            throw e
-          } else if (status.contains(JsString("OK"))) {
-            (parsedBody \\ "location").flatMap(_.asOpt[Location]).headOption.map((apartment, _))
-          } else {
-            val e = new Exception(s"Unexpected response from Google API: $parsedBody")
-            log.error(e.getMessage)
-            throw e
+          (parsedBody \ "status").toOption match {
+            case Some(JsString("OK")) => (parsedBody \\ "location").flatMap(_.asOpt[Location]).headOption.map((apartment, _))
+            case Some(JsString("ZERO_RESULTS")) => None
+            case Some(JsString("OVER_QUERY_LIMIT")) => throw new Exception(s"Google API query limit exceeded: $parsedBody")
+            case _ => throw new Exception(s"Unexpected response from Google API: $parsedBody")
           }
         } else {
-          log.warn(s"Couldn't get location for $apartment: ${response.body}")
+          log.warn(s"Couldn't get location for $apartment: Status code:${response.code} ${response.body}")
           None
         }
       }
