@@ -32,9 +32,9 @@ object LocationResolver extends Settings with Logging {
     apartment =>
       Future {
         log.info(s"Resolving address for ${apartment.address}")
-        val response: HttpResponse[String] = Http(googleApi.url)
+        val response: HttpResponse[String] = Http(GoogleApi.url)
           .param("address", apartment.address)
-          .param("key", googleApi.key)
+          .param("key", GoogleApi.key)
           .asString
         // TODO Add preference for slovakia
 
