@@ -6,10 +6,19 @@ trait Settings {
 
   val conf = ConfigFactory.load()
 
-  object ElasticHost {
-    private val elastic = conf.getConfig("elastic")
+  object ElasticLocal {
+    private val elastic = conf.getConfig("elastic-local")
     val url = elastic.getString("url")
     val port = elastic.getInt("port")
+  }
+
+  object AWS {
+    private val aws = conf.getConfig("aws")
+    val accessKey = aws.getString("accessKey")
+    val secretKey = aws.getString("secretKey")
+    val region = aws.getString("region")
+    val elasticUrl = aws.getString("elastic.url")
+    val elasticPort = aws.getInt("elastic.port")
   }
 
   object GoogleApi {

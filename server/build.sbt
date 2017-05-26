@@ -3,6 +3,8 @@ name := "bytmap"
 version := "0.1.0"
 scalaVersion := "2.12.2"
 
+resolvers += Resolver.jcenterRepo
+
 val akkaVersion = "2.4.17"
 val elastic4sVersion = "5.4.2"
 val specs2Version = "3.8.9"
@@ -17,6 +19,7 @@ libraryDependencies ++= Seq(
 	"com.typesafe.play" %% "play-json" % "2.6.0-M7",
 	"org.scalaj" %% "scalaj-http" % "2.3.0",
 	"org.jsoup" % "jsoup" % "1.10.2",
+	"vc.inreach.aws" % "aws-signing-request-interceptor" % "0.0.16",
 
 	"com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
 	"com.sksamuel.elastic4s" %% "elastic4s-testkit" % elastic4sVersion % Test,

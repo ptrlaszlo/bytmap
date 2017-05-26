@@ -1,30 +1,27 @@
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.sksamuel.elastic4s.ElasticsearchClientUri
-import com.sksamuel.elastic4s.http.HttpClient
 import common.{Logging, Settings}
 import logic._
 
 import scala.util.{Failure, Success}
 
 object Main extends App with Settings with Logging {
-
   implicit val system = ActorSystem("system")
   implicit val materializer = ActorMaterializer()
   implicit val ec = system.dispatcher
 
-  val client = HttpClient(ElasticsearchClientUri(ElasticHost.url, ElasticHost.port))
-  val elasticClient = new ElasticSearch(client)
+  val elasticClient = ElasticClient.getAwsClient
+  val elasticLogic = new ElasticSearch(elasticClient)
   val locationResolver = new LocationResolver(GoogleApi.maxRequestPerDay, LocationResolver.getAddress)
   val topReality = new TopReality(
     Crawler.pagesToCrawl, //TopRealityParser.getNumberOfPages,
     TopRealityParser.readDataFromPage,
     TopRealityParser.getApartmentsFromDocument)
-  val parseCycle = new ParseCycle(elasticClient, topReality, locationResolver)
+  val parseCycle = new ParseCycle(elasticLogic, topReality, locationResolver)
 
   def shutDown = {
-    client.close()
+    elasticClient.close()
     system.terminate()
     ()
   }
