@@ -1,0 +1,20 @@
+service: bytmap-client
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  region: eu-west-1
+  environment:
+    BYTMAP_AWS_ACCESS_KEY: ${env:BYTMAP_AWS_ACCESS_KEY}
+    BYTMAP_AWS_SECRET_KEY: ${env:BYTMAP_AWS_SECRET_KEY}
+    BYTMAP_AWS_REGION: ${env:BYTMAP_AWS_REGION}
+    BYTMAP_ES_URL: ${env:BYTMAP_ES_URL}
+
+functions:
+  getapartments:
+    handler: bytmap.getapartments
+    events:
+      - http:
+          path: apartments
+          method: get
+          cors: true

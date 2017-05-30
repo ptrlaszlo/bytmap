@@ -1,0 +1,8 @@
+{
+  "name": "bytmap-client",
+  "description": "Packages needed for bytmap client",
+  "dependencies": {
+    "elasticsearch": "13.0.1",
+    "http-aws-es": "1.1.x"
+  }
+}

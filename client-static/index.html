@@ -1,0 +1,75 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Bytmap</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+  <style>
+    html,body{
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    div#map {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDZCVFKq4RqoHvCLPUzbmyFRw8eGOPiOGc&callback=initMap" type="text/javascript"></script>
+  <script>
+    let map = undefined;   
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 13,
+        center: {lat: 48.143, lng: 17.107},
+        disableDefaultUI: true,
+        zoomControl: true
+      });
+      google.maps.event.addListenerOnce(map, 'idle', function(){
+        readApartments();
+      });
+    }
+
+    function readApartments() {
+      const bounds = map.getBounds();
+      if (bounds) {
+        const nelat = bounds.getNorthEast().lat();
+        const nelon = bounds.getNorthEast().lng();
+        const swlat = bounds.getSouthWest().lat();
+        const swlon = bounds.getSouthWest().lng();
+        const opts = { method: 'GET', headers: {} };
+        fetch(`https://yy63laj6u7.execute-api.eu-west-1.amazonaws.com/dev/apartments`, opts).then(function (response) {
+          return response.json();
+        }).then(function (body){
+          plotMarkers(body);
+        });
+      }
+    }
+
+    function plotMarkers(result) {
+      let infowindow = new google.maps.InfoWindow();
+      result.forEach(function (value) {
+        const marker = new google.maps.Marker({
+          position: {lat: value._source.location.lat, lng: value._source.location.lon},
+          map: map
+        });
+        marker.infowindow = infowindow;
+        marker.addListener('click', function() {
+          const content = `<a target="_blank" href="${value._source['topreality.link']}">${value._source['topreality.title']}</a>`;
+          infowindow.setContent(content);
+          infowindow.open(map, marker);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
