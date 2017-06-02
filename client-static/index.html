@@ -58,6 +58,9 @@
     function plotMarkers(result) {
       let infowindow = new google.maps.InfoWindow();
       result.forEach(function (value) {
+        if (value._source['topreality.link'] == undefined) {
+          // TODO should not receive undefined
+        }
         const marker = new google.maps.Marker({
           position: {lat: value._source.location.lat, lng: value._source.location.lon},
           map: map

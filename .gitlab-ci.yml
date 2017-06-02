@@ -4,15 +4,35 @@ services:
   - docker:dind
 
 stages:
-  - publish
+  - publishServer
+  - publishClientLambda
+  - publishClientStatic
 
-before_script:
-  # Log  the sbt version
-  - sbt sbt-version
-  - cd server/
-
-publish:
-  stage: publish
+publishServer:
+  stage: publishServer
   script:
-    - docker login -u lapi -p $DOCKER_HUB_PASS
-    - sbt clean dockerBuildAndPush
+    - >
+      if git diff HEAD~ --name-only|grep server; then
+        cd server/
+        docker login -u lapi -p $DOCKER_HUB_PASS
+        sbt clean dockerBuildAndPush
+      fi;
+
+publishClientLambda:
+  stage: publishClientLambda
+  script:
+    - >
+      if git diff HEAD~ --name-only|grep server; then
+        cd client-lambda/
+        echo "Changes in lambda"
+      fi;
+
+
+publishClientStatic:
+  stage: publishClientStatic
+  script:
+    - >
+      if git diff HEAD~ --name-only|grep server; then
+        cd client-static/
+        echo "Changes in static"
+      fi;
