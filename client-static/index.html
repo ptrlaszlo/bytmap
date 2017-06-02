@@ -47,7 +47,7 @@
         const swlat = bounds.getSouthWest().lat();
         const swlon = bounds.getSouthWest().lng();
         const opts = { method: 'GET', headers: {} };
-        fetch(`https://yy63laj6u7.execute-api.eu-west-1.amazonaws.com/dev/apartments`, opts).then(function (response) {
+        fetch(`https://fozix1n9gl.execute-api.eu-west-1.amazonaws.com/dev/apartments`, opts).then(function (response) {
           return response.json();
         }).then(function (body){
           plotMarkers(body);

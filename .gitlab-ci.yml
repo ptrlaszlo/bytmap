@@ -11,12 +11,9 @@ stages:
 publishServer:
   stage: publishServer
   script:
-    - >
-      if git diff HEAD~ --name-only|grep server; then
-        cd server/
-        docker login -u lapi -p $DOCKER_HUB_PASS
-        sbt clean dockerBuildAndPush
-      fi;
+    - cd server/
+    - docker login -u lapi -p $DOCKER_HUB_PASS
+    - sbt clean dockerBuildAndPush
 
 publishClientLambda:
   stage: publishClientLambda

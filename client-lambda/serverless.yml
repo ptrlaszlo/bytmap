@@ -3,7 +3,7 @@ service: bytmap-client
 provider:
   name: aws
   runtime: nodejs6.10
-  region: eu-west-1
+  region: ${env:BYTMAP_AWS_REGION}
   environment:
     BYTMAP_AWS_ACCESS_KEY: ${env:BYTMAP_AWS_ACCESS_KEY}
     BYTMAP_AWS_SECRET_KEY: ${env:BYTMAP_AWS_SECRET_KEY}
