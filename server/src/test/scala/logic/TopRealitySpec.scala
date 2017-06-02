@@ -18,7 +18,8 @@ class TopRealitySpec extends Specification {
         area = "41 m2",
         address = "Lichnerova 39, Senec (Senec)",
         price = "400,00 €",
-        date = "19.5.2017"
+        date = "19.5.2017",
+        image = "https://www.topreality.sk/t/594/5940229-1-4.jpg?1495221492"
       )
     }
   }

@@ -6,14 +6,16 @@ final case class TopRealityApartment(
   area: String,
   address: String,
   price: String,
-  date: String) {
+  date: String,
+  image: String) {
   lazy val toMap = Map[String, String](
       "topreality.link" -> link,
       "topreality.title" -> title,
       "topreality.area" -> area,
       "topreality.address" -> address,
       "topreality.price" -> price,
-      "topreality.date" -> date
+      "topreality.date" -> date,
+      "topreality.image" -> image
   )
 }
 
@@ -25,12 +27,14 @@ object TopRealityApartment {
     address <- valueMap.get("topreality.address")
     price <- valueMap.get("topreality.price")
     date <- valueMap.get("topreality.date")
+    image <- valueMap.get("topreality.image")
   } yield TopRealityApartment(
     link = link.toString,
     title = title.toString,
     area = area.toString,
     address = address.toString,
     price = price.toString,
-    date = date.toString
+    date = date.toString,
+    image = image.toString
   )
 }

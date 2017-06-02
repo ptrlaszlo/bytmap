@@ -11,15 +11,18 @@ stages:
 publishServer:
   stage: publishServer
   script:
-    - cd server/
-    - docker login -u lapi -p $DOCKER_HUB_PASS
-    - sbt clean dockerBuildAndPush
+    - >
+      if git diff HEAD~ --name-only|grep '^server/'; then
+        cd server/
+        docker login -u lapi -p $DOCKER_HUB_PASS
+        sbt clean dockerBuildAndPush
+      fi;
 
 publishClientLambda:
   stage: publishClientLambda
   script:
     - >
-      if git diff HEAD~ --name-only|grep server; then
+      if git diff HEAD~ --name-only|grep '^client-lambda/'; then
         cd client-lambda/
         echo "Changes in lambda"
       fi;
@@ -29,7 +32,7 @@ publishClientStatic:
   stage: publishClientStatic
   script:
     - >
-      if git diff HEAD~ --name-only|grep server; then
+      if git diff HEAD~ --name-only|grep '^client-static/'; then
         cd client-static/
         echo "Changes in static"
       fi;
