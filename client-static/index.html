@@ -57,9 +57,11 @@
 
     function plotMarkers(result) {
       let infowindow = new google.maps.InfoWindow();
-      result.forEach(function (value) {
-        if (value._source['topreality.link'] == undefined) {
-          // TODO should not receive undefined
+      // TODO should not receive undefined
+      result.filter(a => a._source['topreality.link'] != undefined).forEach(function (value) {
+        let content = `<a target="_blank" href="${value._source['topreality.link']}">${value._source['topreality.title']}</a>`;
+        if (value._source['topreality.image'] != undefined) {
+          content = `<img src="${value._source['topreality.image']}"><br>` + content;
         }
         const marker = new google.maps.Marker({
           position: {lat: value._source.location.lat, lng: value._source.location.lon},
@@ -67,7 +69,6 @@
         });
         marker.infowindow = infowindow;
         marker.addListener('click', function() {
-          const content = `<a target="_blank" href="${value._source['topreality.link']}">${value._source['topreality.title']}</a>`;
           infowindow.setContent(content);
           infowindow.open(map, marker);
         });

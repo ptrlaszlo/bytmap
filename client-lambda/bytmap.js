@@ -18,7 +18,7 @@ const es = require('elasticsearch').Client({
 module.exports.getapartments = (event, context, callback) => {
   es.search({
     index: 'rents',
-    size: 50,
+    size: 500,
     body: {
       query: {
         exists: {
