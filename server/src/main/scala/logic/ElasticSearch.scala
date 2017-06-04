@@ -47,9 +47,9 @@ class ElasticSearch(client: HttpClient) {
     implicit val apartmentRequestBuilder = new RequestBuilder[TopRealityApartment] {
       def request(t: TopRealityApartment): BulkCompatibleDefinition = {
         val lastModified = fieldLastModified -> Time.getCurrentDateStr
-        val calculatedArea = fieldArea -> ApartmentInfoParser.getArea(t.area)
-        val calculatedPrice = fieldEurPrice -> ApartmentInfoParser.getPriceInEur(czkRate)(t.price)
-        val valueMap = t.toMap + lastModified + calculatedArea + calculatedPrice
+        val calculatedArea = ApartmentInfoParser.getArea(t.area).map(area => fieldArea -> area).toMap
+        val calculatedPrice = ApartmentInfoParser.getPriceInEur(czkRate)(t.price).map(price => fieldEurPrice -> price).toMap
+        val valueMap = t.toMap + lastModified ++ calculatedArea ++ calculatedPrice
         indexOrUpdate(t.link, valueMap)
       }
     }
