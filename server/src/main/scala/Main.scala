@@ -18,7 +18,7 @@ object Main extends App with Settings with Logging {
     Crawler.pagesToCrawl, //TopRealityParser.getNumberOfPages,
     TopRealityParser.readDataFromPage,
     TopRealityParser.getApartmentsFromDocument)
-  val parseCycle = new ParseCycle(elasticLogic, topReality, locationResolver)
+  val parseCycle = new ParseCycle(elasticLogic, topReality, locationResolver, CurrencyConversion.getCzkPrice)
 
   def shutDown = {
     elasticClient.close()

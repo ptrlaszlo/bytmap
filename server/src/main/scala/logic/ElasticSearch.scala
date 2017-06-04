@@ -22,6 +22,7 @@ class ElasticSearch(client: HttpClient) {
   private val fieldLocation = "location"
   private val fieldLastModified = "modified"
   private val fieldArea = "area"
+  private val fieldEurPrice = "eurPrice"
 
   def initIndex(implicit ec: ExecutionContext): Future[Unit] = {
     client.execute(
@@ -42,12 +43,13 @@ class ElasticSearch(client: HttpClient) {
     update(id).in(indexRent, typeApartment).docAsUpsert(values).copy(retryOnConflict = Some(5))
   }
 
-  def upsertApartment(completeOnFinish: Promise[Unit])(implicit as: ActorSystem) = {
+  def upsertApartment(czkRate: Option[BigDecimal], completeOnFinish: Promise[Unit])(implicit as: ActorSystem) = {
     implicit val apartmentRequestBuilder = new RequestBuilder[TopRealityApartment] {
       def request(t: TopRealityApartment): BulkCompatibleDefinition = {
         val lastModified = fieldLastModified -> Time.getCurrentDateStr
         val calculatedArea = fieldArea -> ApartmentInfoParser.getArea(t.area)
-        val valueMap = t.toMap + lastModified + calculatedArea
+        val calculatedPrice = fieldEurPrice -> ApartmentInfoParser.getPriceInEur(czkRate)(t.price)
+        val valueMap = t.toMap + lastModified + calculatedArea + calculatedPrice
         indexOrUpdate(t.link, valueMap)
       }
     }
