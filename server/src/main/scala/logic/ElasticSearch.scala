@@ -29,7 +29,9 @@ class ElasticSearch(client: HttpClient) {
       createIndex(indexRent).mappings(
         MappingDefinition(typeApartment)
           .as(
-            geopointField(fieldLocation)
+            geopointField(fieldLocation),
+            shortField(fieldArea),
+            floatField(fieldEurPrice)
           )
       )
     )

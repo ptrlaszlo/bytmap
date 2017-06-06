@@ -26,7 +26,8 @@
   <div id="map"></div>
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDZCVFKq4RqoHvCLPUzbmyFRw8eGOPiOGc&callback=initMap" type="text/javascript"></script>
   <script>
-    let map = undefined;   
+    let map = undefined;
+    let infowindow = undefined;
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), {
         zoom: 13,
@@ -34,6 +35,11 @@
         disableDefaultUI: true,
         zoomControl: true
       });
+      infowindow = new google.maps.InfoWindow();
+
+      map.addListener('dragend', function(){ readApartments(); });
+      map.addListener('zoom_changed', function(){ readApartments(); });
+
       google.maps.event.addListenerOnce(map, 'idle', function(){
         readApartments();
       });
@@ -47,7 +53,9 @@
         const swlat = bounds.getSouthWest().lat();
         const swlon = bounds.getSouthWest().lng();
         const opts = { method: 'GET', headers: {} };
-        fetch(`https://fozix1n9gl.execute-api.eu-west-1.amazonaws.com/dev/apartments`, opts).then(function (response) {
+        const params = `latTop=${nelat}&latBottom=${swlat}&lonWest=${swlon}&lonEast=${nelon}`;
+
+        fetch(`https://fozix1n9gl.execute-api.eu-west-1.amazonaws.com/dev/apartments?${params}`, opts).then(function (response) {
           return response.json();
         }).then(function (body){
           plotMarkers(body);
@@ -55,24 +63,45 @@
       }
     }
 
+    function generateContent(item) {
+      return `
+        <img src="${item.image}"><br>
+        <a target="_blank" href="${item.link}">${item.title}</a><br>
+        €${item.price}<br>
+        ${item.area}m<sup>2</sup>
+      `;
+    }
+
+    let markersMap = new Map();
     function plotMarkers(result) {
-      let infowindow = new google.maps.InfoWindow();
-      // TODO should not receive undefined
-      result.filter(a => a._source['topreality.link'] != undefined).forEach(function (value) {
-        let content = `<a target="_blank" href="${value._source['topreality.link']}">${value._source['topreality.title']}</a>`;
-        if (value._source['topreality.image'] != undefined) {
-          content = `<img src="${value._source['topreality.image']}"><br>` + content;
+      infowindow.close();
+      let newMarkers = new Map();
+      result.forEach(function (item) {
+        const marker = markersMap.get(item.link);
+        if (marker) {
+          marker.infowindow.setContent(generateContent(item));
+          newMarkers.set(item.link, marker);
+        } else {
+          const marker = new google.maps.Marker({
+            position: {lat: item.location.lat, lng: item.location.lon},
+            map: map
+          });
+          marker.infowindow = infowindow;
+          marker.addListener('click', function() {
+            infowindow.setContent(generateContent(item));
+            infowindow.open(map, marker);
+          });
+          newMarkers.set(item.link, marker);
         }
-        const marker = new google.maps.Marker({
-          position: {lat: value._source.location.lat, lng: value._source.location.lon},
-          map: map
-        });
-        marker.infowindow = infowindow;
-        marker.addListener('click', function() {
-          infowindow.setContent(content);
-          infowindow.open(map, marker);
-        });
       });
+
+      markersMap.forEach(function (marker, id) {
+        // remove markers which are not visible any more
+        if (!newMarkers.get(id)) {
+          marker.setMap(null);
+        }
+      });
+      markersMap = newMarkers;
     }
   </script>
 </body>
