@@ -23,6 +23,13 @@
   </style>
 </head>
 <body>
+  <form id="filter">
+    <input type="text" name="areaMin" id="areaMin" placeholder="min area">
+    <input type="text" name="areaMax" id="areaMax" placeholder="max area">
+    <input type="text" name="priceMin" id="priceMin" placeholder="min price">
+    <input type="text" name="priceMax" id="priceMax" placeholder="max price">
+    <input type="submit" value="Filter" onclick="readApartments();return false;">
+  </form>
   <div id="map"></div>
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDZCVFKq4RqoHvCLPUzbmyFRw8eGOPiOGc&callback=initMap" type="text/javascript"></script>
   <script>
@@ -45,16 +52,30 @@
       });
     }
 
+    function isNumeric(n) {
+      return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+
     function readApartments() {
       const bounds = map.getBounds();
       if (bounds) {
+        let numericParams = '';
+        const areaMin = document.getElementById('areaMin').value;
+        if (isNumeric(areaMin)) { numericParams += `&areaMin=${areaMin}` }
+        const areaMax = document.getElementById('areaMax').value;
+        if (isNumeric(areaMax)) { numericParams += `&areaMax=${areaMax}` }
+        const priceMin = document.getElementById('priceMin').value;
+        if (isNumeric(priceMin)) { numericParams += `&priceMin=${priceMin}` }
+        const priceMax = document.getElementById('priceMax').value;
+        if (isNumeric(priceMax)) { numericParams += `&priceMax=${priceMax}` }
+
         const nelat = bounds.getNorthEast().lat();
         const nelon = bounds.getNorthEast().lng();
         const swlat = bounds.getSouthWest().lat();
         const swlon = bounds.getSouthWest().lng();
         const opts = { method: 'GET', headers: {} };
-        const params = `latTop=${nelat}&latBottom=${swlat}&lonWest=${swlon}&lonEast=${nelon}`;
-
+        const params = `latTop=${nelat}&latBottom=${swlat}&lonWest=${swlon}&lonEast=${nelon}` + numericParams;
+        console.log(params);
         fetch(`https://fozix1n9gl.execute-api.eu-west-1.amazonaws.com/dev/apartments?${params}`, opts).then(function (response) {
           return response.json();
         }).then(function (body){
@@ -65,10 +86,11 @@
 
     function generateContent(item) {
       return `
-        <img src="${item.image}"><br>
-        <a target="_blank" href="${item.link}">${item.title}</a><br>
-        €${item.price}<br>
-        ${item.area}m<sup>2</sup>
+        <a target="_blank" href="${item.link}" style="text-decoration:none;">
+        <img src="${item.image}" style="float: left;padding-right:5px;"><br>
+        ${item.title}<br><br>
+        €${item.price}, ${item.area}m<sup>2</sup>
+        </a>
       `;
     }
 

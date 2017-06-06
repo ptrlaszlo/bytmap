@@ -34,7 +34,7 @@ function getQuery(event) {
     const lonWest = event.queryStringParameters.lonWest;
     const lonEast = event.queryStringParameters.lonEast;
 
-    if (priceMin !== undefined || priceMin !== undefined) {
+    if (priceMin !== undefined || priceMax !== undefined) {
       let eurPrice = { gte: priceMin, lte: priceMax };
       filter.push({ range: { "eurPrice": eurPrice} });
     }
