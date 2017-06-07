@@ -9,13 +9,14 @@ import com.sksamuel.elastic4s.http.HttpClient
 import com.sksamuel.elastic4s.mappings._
 import com.sksamuel.elastic4s.streams.ReactiveElastic._
 import com.sksamuel.elastic4s.streams.RequestBuilder
-import common.Time
+import common.{Logging, Time}
 import model.{Location, TopRealityApartment}
 import org.elasticsearch.common.geo.GeoPoint
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.util.Success
 
-class ElasticSearch(client: HttpClient) {
+class ElasticSearch(client: HttpClient) extends Logging {
 
   private[logic] val indexRent = "rents"
   private val typeApartment = "apartment"
@@ -105,7 +106,9 @@ class ElasticSearch(client: HttpClient) {
     .mapConcat(hit => TopRealityApartment.fromMap(hit.sourceAsMap).toList)
   }
 
-  def removeNotModifiedToday = client.execute {
+  def removeNotModifiedToday(implicit ec: ExecutionContext) = client.execute {
       deleteIn(indexRent, typeApartment).by(rangeQuery(fieldLastModified).lt("now/d"))
+  }.andThen {
+    case Success(result) => log.info(s"Removing ${result.deleted} items, which were not modified today")
   }
 }
