@@ -1,0 +1,7 @@
+{
+  "name": "bytmap-static-client",
+  "description": "Packages needed for bytmap static client",
+  "dependencies": {
+    "@types/googlemaps": "latest"
+  }
+}
