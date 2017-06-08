@@ -19,7 +19,7 @@ class LocationResolver(
   def getAddressFlow(implicit ec: ExecutionContext) = Flow[TopRealityApartment]
     .zip(requestLimit)
     .mapAsyncUnordered(1){ i =>
-      log.info(s"Location request ${i._2}")
+      log.debug(s"Location request ${i._2}")
       fromAddress(i._1)
     }
     .throttle(45, 1 seconds, 1, ThrottleMode.Shaping)
@@ -31,7 +31,7 @@ object LocationResolver extends Settings with Logging {
   def getAddress(implicit ec: ExecutionContext): TopRealityApartment => Future[Option[(TopRealityApartment, Location)]] =
     apartment =>
       Future {
-        log.info(s"Resolving address for ${apartment.address}")
+        log.debug(s"Resolving address for ${apartment.address}")
         val response: HttpResponse[String] = Http(GoogleApi.url)
           .param("address", apartment.address)
           .param("key", GoogleApi.key)

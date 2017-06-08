@@ -34,11 +34,19 @@ function readApartments(bounds) {
     }
 }
 function generateContent(item) {
+    let title;
+    if (item.title.length > 50) {
+        title = item.title.substr(0, 47) + '...';
+    }
+    else {
+        title = item.title;
+    }
     return `
-    <a target="_blank" href="${item.link}" style="text-decoration:none;">
-    <img src="${item.image}" style="float: left;padding-right:5px;"><br>
-    ${item.title}<br><br>
-    €${parseInt(item.price)}, ${item.area}m<sup>2</sup>
+    <a target="_blank" href="${item.link}" class="infobox">
+    <img src="${item.image}">
+    <span>${title}</span><br>
+    Cena: €${parseInt(item.price)}/mesiac<br>
+    Plocha: ${item.area}m<sup>2</sup>
     </a>
   `;
 }

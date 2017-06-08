@@ -23,7 +23,7 @@ class TopReality(
     Source(1 to pages)
       .throttle(1, 2 seconds, 1, ThrottleMode.Shaping)
       .mapAsyncUnordered(4) { pageNumber =>
-        log.info(s"Getting topreality data for page $pageNumber")
+        log.debug(s"Getting topreality data for page $pageNumber")
         pageNumToDocument(pageNumber).map(apartmentParser)
       }
       .mapConcat(identity)
