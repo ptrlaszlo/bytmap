@@ -44,9 +44,9 @@ function generateContent(item) {
     return `
     <a target="_blank" href="${item.link}" class="infobox">
     <img src="${item.image}">
-    <span>${title}</span><br>
-    Cena: €${parseInt(item.price)}/mesiac<br>
-    Plocha: ${item.area}m<sup>2</sup>
+    <span class="title">${title}</span><br>
+    <span class="price">Cena: €${parseInt(item.price)}/mesiac</span>
+    <span>Plocha: ${item.area}m<sup>2</sup></span>
     </a>
   `;
 }

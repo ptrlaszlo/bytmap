@@ -50,11 +50,17 @@ input[type="submit"] {
 .infobox img {
   float:left;
   padding-right:5px;
+  width: 100px;
 }
 .infobox span {
-  padding-bottom:10px;
-  max-width:150px;
   display:inline-block;
+}
+.infobox .title {
+  padding-bottom:10px;
+  max-width:100px;
+}
+.infobox .price {
+  padding-right: 10px;
 }
 @media (min-width: 768px) {
   #logo-wrapper {
@@ -65,5 +71,14 @@ input[type="submit"] {
   }
   .input-field input {
     max-width: 100%;
+  }
+  .infobox img {
+    width: 145px;
+  }
+  .infobox .title {
+    max-width:150px;
+  }
+  .infobox .price {
+    padding-right: 25px;
   }
 }

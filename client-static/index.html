@@ -3,10 +3,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Bytmap.sk - hľadanie podnájmu</title>
+  <title>Bytmap.sk - podnájmy na mape</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="">
-  <meta name="author" content="">
+  <meta name="description" content="Podnájmy na mape">
   <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
   <![endif]-->
@@ -17,16 +16,16 @@
   <header>
     <div id="logo-wrapper">
       <img src="assets/bytmap.svg" alt="Bytmap.sk logo">
-      <span id="site-name">Bytmap.sk</span><span> - hľadanie podnájmu</span>
+      <span id="site-name">Bytmap.sk</span><span> - podnájmy na mape</span>
     </div>
     <form>
       <div class="input-field">
-        <input type="number" name="areaMin" id="areaMin" placeholder="Min. plocha">
-        <input type="number" name="areaMax" id="areaMax" placeholder="Max. plocha">
+        <input type="number" name="areaMin" id="areaMin" placeholder="Min. plocha m2">
+        <input type="number" name="areaMax" id="areaMax" placeholder="Max. plocha m2">
       </div>
       <div class="input-field">
-        <input type="number" name="priceMin" id="priceMin" placeholder="Min. cena">
-        <input type="number" name="priceMax" id="priceMax" placeholder="Max. cena">
+        <input type="number" name="priceMin" id="priceMin" placeholder="Min. cena €">
+        <input type="number" name="priceMax" id="priceMax" placeholder="Max. cena €">
       </div>
       <input type="submit" value="Filter" onclick="filter();return false;">
     </form>
