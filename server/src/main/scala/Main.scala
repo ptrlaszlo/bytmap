@@ -34,5 +34,6 @@ object Main extends App with Settings with Logging {
     case Failure(f) =>
       log.error("Parse cycle failed", f)
       shutDown
+      sys.exit(1)
   }
 }

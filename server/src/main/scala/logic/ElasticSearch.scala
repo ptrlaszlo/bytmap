@@ -107,7 +107,7 @@ class ElasticSearch(client: HttpClient) extends Logging {
   }
 
   def removeNotModifiedToday(implicit ec: ExecutionContext) = client.execute {
-      deleteIn(indexRent, typeApartment).by(rangeQuery(fieldLastModified).lt("now/d"))
+      deleteIn(indexRent, typeApartment).by(rangeQuery(fieldLastModified).lt("now/d")).abortOnVersionConflict(false)
   }.andThen {
     case Success(result) => log.info(s"Removing ${result.deleted} items, which were not modified today")
   }
