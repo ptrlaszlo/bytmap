@@ -7,6 +7,7 @@ class ApartmentInfoParserSpec extends Specification {
     "parse single values correctly" in {
       ApartmentInfoParser.getArea("1 m2") mustEqual Some(1)
       ApartmentInfoParser.getArea("18 m2") mustEqual Some(18)
+      ApartmentInfoParser.getArea("1 005 m2") mustEqual Some(1005)
     }
     "parse multiple values correctly" in {
       ApartmentInfoParser.getArea("44 m2 44 m2 55 m2") mustEqual Some(44)

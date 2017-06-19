@@ -6,9 +6,9 @@ import scala.util.Try
 
 object ApartmentInfoParser extends Logging {
 
-  private val areaRegex = "^([0-9]{1,4}) m2.*$".r
+  private val areaRegex = "^([0-9]{1,4})m2.*$".r
 
-  def getArea(str: String): Option[Int] = str match {
+  def getArea(str: String): Option[Int] = str.replace(" ","") match {
     case areaRegex(area) => Some(area.toInt)
     case other =>
       log.warn(s"Couldn't parse area $other")
