@@ -1,4 +1,4 @@
-## [Bytmap.sk](https://bytmap.sk)
+## Bytmap.sk
 Visualizing rental apartments in Slovakia on a map.
 
 ![Screenshot of the running page](screenshot.png)
